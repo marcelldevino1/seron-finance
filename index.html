@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esport Team Finance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --bg-primary: #0a0f1c;
+    --bg-secondary: #0d1424;
+    --bg-card: #111936;
+    --bg-card-hover: #162042;
+    --border: #1e3a5f;
+    --border-light: #2a4a7a;
+    --accent: #00d4ff;
+    --accent-dark: #00a8cc;
+    --accent-light: #7de2ff;
+    --accent-glow: rgba(0, 212, 255, 0.3);
+    --accent-glow-strong: rgba(0, 212, 255, 0.5);
+    --ice-cyan: #00e5ff;
+    --ice-blue: #00b4d8;
+    --ice-dark: #0077b6;
+    --income: #00f5a0;
+    --income-bg: rgba(0, 245, 160, 0.1);
+    --income-border: rgba(0, 245, 160, 0.3);
+    --expense: #ff4d6d;
+    --expense-bg: rgba(255, 77, 109, 0.1);
+    --expense-border: rgba(255, 77, 109, 0.3);
+    --text-primary: #e0f7ff;
+    --text-secondary: #8ecae6;
+    --text-muted: #5a8fb3;
+    --gradient-ice: linear-gradient(135deg, #00d4ff, #00f5a0);
+    --gradient-dark: linear-gradient(180deg, #0a0f1c, #111936);
+    --gradient-card: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,245,160,0.05));
+    --shadow: 0 4px 24px rgba(0,0,0,0.5);
+    --shadow-ice: 0 0 30px rgba(0, 212, 255, 0.2);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.7);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  #preloadScreen {
+    position: fixed;
+    inset: 0;
+    background: var(--gradient-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+  }
+
+  #preloadScreen.slide-up {
+    transform: translateY(-100%);
+  }
+
+  .preload-logo-container {
+    text-align: center;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .preload-logo {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 30px var(--accent-glow-strong));
+    animation: logoFloat 3s ease-in-out infinite;
+  }
+
+  .preload-text {
+    margin-top: 30px;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 8px;
+    background: var(--gradient-ice);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+  }
+
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+  }
+
+  #setupScreen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  #setupScreen.hidden { display: none; }
+
+  .setup-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px;
+    max-width: 520px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-lg), var(--shadow-ice);
+  }
+
+  .setup-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--gradient-ice);
+  }
+
+  .setup-icon {
+    width: 90px; height: 90px;
+    margin: 0 auto 24px;
+    background: var(--gradient-ice);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    box-shadow: 0 8px 32px var(--accent-glow);
+  }
+
+  .setup-card h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    background: var(--gradient-ice);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .setup-card p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  .input-group {
+    margin-bottom: 24px;
+    text-align: left;
+  }
+
+  .input-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 16px 20px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+  }
+
+  .input-group input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+  }
+
+  .btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background: var(--gradient-ice);
+    color: var(--bg-primary);
+    width: 100%;
+    font-weight: 700;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--accent-glow-strong);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid var(--border);
+  }
+
+  #app { display: none; min-height: 100vh; }
+  #app.active { display: flex; }
+
+  .sidebar {
+    width: 300px;
+    min-height: 100vh;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .sidebar-header {
+    padding: 28px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .sidebar-logo-img {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    object-fit: contain;
+  }
+
+  .sidebar-logo h2 {
+    font-size: 16px;
+    font-weight: 800;
+    background: var(--gradient-ice);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .sidebar-logo h2 span {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-muted);
+    display: block;
+    -webkit-text-fill-color: var(--text-muted);
+  }
+
+  .team-list { flex: 1; overflow-y: auto; padding: 16px; }
+  
+  .team-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    margin-bottom: 8px;
+    border-radius: 14px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+  }
+
+  .team-item:hover { background: var(--bg-card-hover); }
+  
+  .team-item.active {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--accent);
+  }
+
+  .team-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    background: var(--gradient-ice);
+    color: var(--bg-primary);
+  }
+
+  .team-info { flex: 1; }
+  
+  .team-name {
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .team-balance {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .add-team-btn {
+    margin: 12px;
+    padding: 14px;
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .add-team-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .main {
+    flex: 1;
+    margin-left: 300px;
+    padding: 40px;
+    background: var(--gradient-dark);
+  }
+
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+  }
+
+  .summary-card-icon {
+    width: 50px; height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 16px;
+    background: var(--gradient-ice);
+  }
+
+  .summary-card-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .summary-card-value {
+    font-size: 28px;
+    font-weight: 800;
+    background: var(--gradient-ice);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .transactions-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 24px;
+    padding: 36px;
+    max-width: 500px;
+    width: 90%;
+  }
+
+  .modal h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 28px;
+    background: var(--gradient-ice);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    outline: none;
+  }
+
+  .form-group input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+  }
+
+  .type-toggle {
+    display: flex;
+    gap: 12px;
+  }
+
+  .type-toggle-btn {
+    flex: 1;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .type-toggle-btn.active-income {
+    background: var(--income-bg);
+    border-color: var(--income);
+    color: var(--income);
+  }
+
+  .type-toggle-btn.active-expense {
+    background: var(--expense-bg);
+    border-color: var(--expense);
+    color: var(--expense);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .modal-actions .btn { flex: 1; }
+
+  .modal-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 2000;
+  }
+
+  .toast {
+    padding: 16px 24px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    animation: slideIn 0.3s ease;
+  }
+
+  .toast.success {
+    background: var(--income-bg);
+    border: 1px solid var(--income);
+    color: var(--income);
+  }
+
+  .toast.error {
+    background: var(--expense-bg);
+    border: 1px solid var(--expense);
+    color: var(--expense);
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Preload Screen -->
+<div id="preloadScreen">
+  <div class="preload-logo-container">
+    <img src="logo.png" alt="Esport Logo" class="preload-logo" onerror="this.style.display='none'">
+    <div class="preload-text">SERON FINANCE</div>
+  </div>
+</div>
+
+<!-- Setup Screen -->
+<div id="setupScreen" class="hidden">
+  <div class="setup-card">
+    <div class="setup-icon">💎</div>
+    <h1>SERON FINANCE</h1>
+    <p>Masukkan URL Google Apps Script Web App</p>
+    <div class="input-group">
+      <label>Google Apps Script URL</label>
+      <input type="text" id="apiUrl" placeholder="https://script.google.com/macros/s/AKfycbxxMb7tTqL9cz7UPPssQeaeR7fAhCcXWigE_AbVGtrmrcBpwuTWrM4j2sNdrAn2xC0e/exec">
+    </div>
+    <button class="btn btn-primary" onclick="saveSetup()">🚀 Mulai Sekarang</button>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Main App -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <img src="logo.png" alt="Logo" class="sidebar-logo-img" onerror="this.style.display='none'">
+        <h2>SERON FINANCE<span>Team Money Tracker</span></h2>
+      </div>
+    </div>
+    <div class="team-list" id="teamList"></div>
+    <button class="add-team-btn" onclick="openAddTeamModal()">＋ Tambah Tim</button>
+  </aside>
+
+  <main class="main">
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="summary-card-icon">💎</div>
+        <div class="summary-card-label">Total Saldo</div>
+        <div class="summary-card-value" id="totalBalance">Rp 0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon">📈</div>
+        <div class="summary-card-label">Pemasukan</div>
+        <div class="summary-card-value" id="totalIncome">Rp 0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon">📉</div>
+        <div class="summary-card-label">Pengeluaran</div>
+        <div class="summary-card-value" id="totalExpense">Rp 0</div>
+      </div>
+    </div>
+
+    <div class="transactions-section">
+      <h3 style="margin-bottom:20px;">Riwayat Transaksi</h3>
+      <button class="btn btn-primary" onclick="openTransactionModal()" style="margin-bottom:20px;">
+        ＋ Tambah Transaksi
+      </button>
+      <div id="txList"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 id="modalTitle">Tambah</h3>
+    <div class="form-group">
+      <label>Nama</label>
+      <input type="text" id="inputName">
+    </div>
+    <div id="extraFields"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveData()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// STATE
+let API_URL = localStorage.getItem('AKfycbxxMb7tTqL9cz7UPPssQeaeR7fAhCcXWigE_AbVGtrmrcBpwuTWrM4j2sNdrAn2xC0e') || '';
+let teams = [];
+let currentTeam = null;
+let transactions = [];
+let currentModalType = '';
+
+// PRELOAD
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('preloadScreen').classList.add('slide-up');
+    setTimeout(() => {
+      document.getElementById('preloadScreen').style.display = 'none';
+      initApp();
+    }, 800);
+  }, 2000);
+});
+
+function initApp() {
+  if (!API_URL) {
+    document.getElementById('setupScreen').classList.remove('hidden');
+  } else {
+    document.getElementById('setupScreen').classList.add('hidden');
+    document.getElementById('app').classList.add('active');
+    loadTeams();
+  }
+}
+
+function saveSetup() {
+  const url = document.getElementById('apiUrl').value.trim();
+  if (!url) {
+    showToast('Masukkan URL!', 'error');
+    return;
+  }
+  API_URL = url;
+  localStorage.setItem('esport_api_url', url);
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('app').classList.add('active');
+  loadTeams();
+}
+
+async function apiCall(params, body = null) {
+  if (!API_URL) {
+    showToast('URL belum diatur!', 'error');
+    return { error: 'No URL' };
+  }
+
+  try {
+    const url = new URL(API_URL);
+    Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
+    
+    const options = {
+      method: body ? 'POST' : 'GET',
+    };
+    
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+
+    const res = await fetch(url.toString(), options);
+    return await res.json();
+  } catch (err) {
+    showToast('Gagal koneksi: ' + err.message, 'error');
+    return { error: err.message };
+  }
+}
+
+async function loadTeams() {
+  const data = await apiCall({ action: 'getTeams' });
+  if (data.error) return;
+  teams = data.teams || [];
+  renderTeams();
+}
+
+function renderTeams() {
+  const container = document.getElementById('teamList');
+  if (teams.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Belum ada tim</p>';
+    return;
+  }
+
+  container.innerHTML = teams.map((team, i) => `
+    <div class="team-item ${currentTeam && currentTeam.id === team.id ? 'active' : ''}" onclick="selectTeam('${team.id}')">
+      <div class="team-icon">${team.name.charAt(0).toUpperCase()}</div>
+      <div class="team-info">
+        <div class="team-name">${team.name}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addTeam() {
+  const name = document.getElementById('inputName').value.trim();
+  if (!name) {
+    showToast('Nama tidak boleh kosong!', 'error');
+    return;
+  }
+
+  const data = await apiCall({ action: 'addTeam' }, { name });
+  if (data.error) {
+    showToast('Gagal: ' + data.error, 'error');
+    return;
+  }
+
+  closeModal();
+  showToast('Tim berhasil ditambahkan!', 'success');
+  loadTeams();
+}
+
+async function selectTeam(id) {
+  currentTeam = teams.find(t => t.id === id);
+  renderTeams();
+  loadTransactions();
+  loadSummary();
+}
+
+async function loadTransactions() {
+  if (!currentTeam) return;
+  const data = await apiCall({ action: 'getTransactions' }, { teamId: currentTeam.id });
+  if (data.error) return;
+  transactions = data.transactions || [];
+  renderTransactions();
+}
+
+function renderTransactions() {
+  const container = document.getElementById('txList');
+  if (transactions.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted);">Belum ada transaksi</p>';
+    return;
+  }
+
+  container.innerHTML = transactions.map(tx => `
+    <div style="padding:12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-weight:600;">${tx.title}</div>
+        <div style="font-size:12px;color:var(--text-muted);">${tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</div>
+      </div>
+      <div style="font-weight:700;color:${tx.type === 'income' ? 'var(--income)' : 'var(--expense)'}">
+        ${tx.type === 'income' ? '+' : '-'}${formatRp(Number(tx.nominal))}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadSummary() {
+  if (!currentTeam) return;
+  const data = await apiCall({ action: 'getSummary' }, { teamId: currentTeam.id });
+  if (data.error) return;
+
+  document.getElementById('totalBalance').textContent = formatRp(data.balance || 0);
+  document.getElementById('totalIncome').textContent = formatRp(data.income || 0);
+  document.getElementById('totalExpense').textContent = formatRp(data.expense || 0);
+}
+
+function openAddTeamModal() {
+  currentModalType = 'team';
+  document.getElementById('modalTitle').textContent = 'Tambah Tim';
+  document.getElementById('inputName').placeholder = 'Nama Tim';
+  document.getElementById('extraFields').innerHTML = '';
+  document.getElementById('modal').classList.add('active');
+}
+
+function openTransactionModal() {
+  if (!currentTeam) {
+    showToast('Pilih tim dulu!', 'error');
+    return;
+  }
+  currentModalType = 'transaction';
+  document.getElementById('modalTitle').textContent = 'Tambah Transaksi';
+  document.getElementById('inputName').placeholder = 'Keterangan';
+  document.getElementById('extraFields').innerHTML = `
+    <div class="form-group">
+      <label>Tipe</label>
+      <div class="type-toggle">
+        <button class="type-toggle-btn active-income" onclick="setTxType('income', this)">Pemasukan</button>
+        <button class="type-toggle-btn" onclick="setTxType('expense', this)">Pengeluaran</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Nominal</label>
+      <input type="number" id="inputNominal" placeholder="0">
+    </div>
+  `;
+  document.getElementById('modal').classList.add('active');
+}
+
+function setTxType(type, btn) {
+  document.querySelectorAll('.type-toggle-btn').forEach(b => {
+    b.classList.remove('active-income', 'active-expense');
+  });
+  btn.classList.add(type === 'income' ? 'active-income' : 'active-expense');
+  window.currentTxType = type;
+}
+
+async function saveData() {
+  if (currentModalType === 'team') {
+    await addTeam();
+  } else if (currentModalType === 'transaction') {
+    const title = document.getElementById('inputName').value.trim();
+    const nominal = document.getElementById('inputNominal').value;
+    const type = window.currentTxType || 'income';
+
+    if (!title || !nominal) {
+      showToast('Semua field harus diisi!', 'error');
+      return;
+    }
+
+    const data = await apiCall({ action: 'addTransaction' }, {
+      teamId: currentTeam.id,
+      type,
+      title,
+      nominal: Number(nominal)
+    });
+
+    if (data.error) {
+      showToast('Gagal: ' + data.error, 'error');
+      return;
+    }
+
+    closeModal();
+    showToast('Transaksi berhasil!', 'success');
+    loadTransactions();
+    loadSummary();
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+function formatRp(num) {
+  return 'Rp ' + num.toLocaleString('id-ID');
+}
+
+function showToast(message, type) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+</script>
+
+</body>
+</html>
