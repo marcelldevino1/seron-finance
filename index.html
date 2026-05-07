@@ -675,6 +675,95 @@
 
   .hidden { display: none !important; }
 
+  /* LOADING OVERLAY */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 15, 28, 0.95);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .loading-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .loading-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 2px;
+    animation: pulse-text 1.5s ease-in-out infinite;
+  }
+
+  .loading-dots {
+    display: inline-flex;
+    gap: 4px;
+  }
+
+  .loading-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: bounce 1.4s ease-in-out infinite;
+  }
+
+  .loading-dot:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .loading-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .loading-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes bounce {
+    0%, 80%, 100% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    40% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulse-text {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
   /* RESPONSIVE DESIGN */
   
   /* Mobile Navigation */
@@ -1093,6 +1182,21 @@
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">
+      Memuat Data
+      <div class="loading-dots">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Main App -->
 <div id="app">
   <aside class="sidebar" id="sidebar">
@@ -1191,6 +1295,14 @@ function closeSidebar() {
   document.body.style.overflow = '';
 }
 
+function showLoading() {
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+
 function updateUIForDevice() {
   const isMobile = window.innerWidth <= 768;
   const sidebarToggle = document.getElementById('sidebarToggle');
@@ -1267,7 +1379,9 @@ async function apiCall(params, body = null) {
 }
 
 async function loadTeams() {
+  showLoading();
   const data = await apiCall({ action: 'getTeams' });
+  hideLoading();
   if (data.error) return;
   teams = data.teams || [];
   renderTeams();
@@ -1297,7 +1411,10 @@ async function addTeam() {
     return;
   }
 
+  showLoading();
   const data = await apiCall({ action: 'addTeam' }, { name });
+  hideLoading();
+  
   if (data.error) {
     showToast('Gagal: ' + data.error, 'error');
     return;
@@ -1323,8 +1440,10 @@ async function selectTeam(id) {
     closeSidebar();
   }
   
-  loadTransactions();
-  loadSummary();
+  showLoading();
+  await loadTransactions();
+  await loadSummary();
+  hideLoading();
 }
 
 async function loadTransactions() {
@@ -1424,12 +1543,14 @@ async function saveData() {
       return;
     }
 
+    showLoading();
     const data = await apiCall({ action: 'addTransaction' }, {
       teamId: currentTeam.id,
       type,
       title,
       nominal: Number(nominal)
     });
+    hideLoading();
 
     if (data.error) {
       showToast('Gagal: ' + data.error, 'error');
@@ -1438,8 +1559,10 @@ async function saveData() {
 
     closeModal();
     showToast('Transaksi berhasil!', 'success');
-    loadTransactions();
-    loadSummary();
+    showLoading();
+    await loadTransactions();
+    await loadSummary();
+    hideLoading();
   }
 }
 
